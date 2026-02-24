@@ -46,7 +46,7 @@ const TIMEOUT_MS = readIntEnv("FC_TIMEOUT_MS", 30000, { min: 1000, max: 300000 }
 
 const server = new McpServer({
   name: "windsurf-fast-context",
-  version: "1.1.0",
+  version: "1.2.0",
   instructions:
     "Windsurf Fast Context — AI-driven semantic code search. " +
     "Returns file paths with line ranges and grep keywords.\n" +
@@ -66,16 +66,16 @@ const server = new McpServer({
 server.tool(
   "fast_context_search",
   "AI-driven semantic code search using Windsurf's Devstral model. " +
-    "Searches a codebase with natural language and returns relevant file paths with line ranges, " +
-    "plus suggested grep keywords for follow-up searches.\n" +
-    "Parameter tuning guide:\n" +
-    "- tree_depth: Controls how much directory structure the remote AI sees before searching. " +
-    "If you get a payload/size error, REDUCE this value. " +
-    "If search results are too shallow (missing files in deep subdirectories), INCREASE this value.\n" +
-    "- max_turns: Controls how many search-execute-feedback rounds the remote AI gets. " +
-    "If results are incomplete or the AI didn't find enough files, INCREASE this value. " +
-    "If you want a quick rough answer, use 1.\n" +
-    "Response includes a [config] line showing actual parameters used — use this to decide adjustments on retry.",
+  "Searches a codebase with natural language and returns relevant file paths with line ranges, " +
+  "plus suggested grep keywords for follow-up searches.\n" +
+  "Parameter tuning guide:\n" +
+  "- tree_depth: Controls how much directory structure the remote AI sees before searching. " +
+  "If you get a payload/size error, REDUCE this value. " +
+  "If search results are too shallow (missing files in deep subdirectories), INCREASE this value.\n" +
+  "- max_turns: Controls how many search-execute-feedback rounds the remote AI gets. " +
+  "If results are incomplete or the AI didn't find enough files, INCREASE this value. " +
+  "If you want a quick rough answer, use 1.\n" +
+  "Response includes a [config] line showing actual parameters used — use this to decide adjustments on retry.",
   {
     query: z.string().describe(
       'Natural language search query (e.g. "where is auth handled", "database connection pool")'
@@ -153,14 +153,17 @@ server.tool(
       return { content: [{ type: "text", text: result }] };
     } catch (e) {
       const code = e.code || "UNKNOWN";
-      return { content: [{ type: "text", text:
-        `Error [${code}]: ${e.message}\n\n` +
-        `[hint] Suggestions based on error type:\n` +
-        `  - Reduce tree_depth (current: ${tree_depth})\n` +
-        `  - Add exclude_paths to filter large directories (e.g. ['node_modules', 'dist'])\n` +
-        `  - Narrow project_path to a subdirectory\n` +
-        `  - Reduce max_turns (current: ${max_turns})`
-      }] };
+      return {
+        content: [{
+          type: "text", text:
+            `Error [${code}]: ${e.message}\n\n` +
+            `[hint] Suggestions based on error type:\n` +
+            `  - Reduce tree_depth (current: ${tree_depth})\n` +
+            `  - Add exclude_paths to filter large directories (e.g. ['node_modules', 'dist'])\n` +
+            `  - Narrow project_path to a subdirectory\n` +
+            `  - Reduce max_turns (current: ${max_turns})`
+        }]
+      };
     }
   }
 );
@@ -170,8 +173,8 @@ server.tool(
 server.tool(
   "extract_windsurf_key",
   "Extract Windsurf API Key from local installation. " +
-    "Auto-detects OS (macOS/Windows/Linux) and reads the API key from " +
-    "Windsurf's local database. Set the result as WINDSURF_API_KEY env var.",
+  "Auto-detects OS (macOS/Windows/Linux) and reads the API key from " +
+  "Windsurf's local database. Set the result as WINDSURF_API_KEY env var.",
   {},
   async () => {
     const result = await extractKeyInfo();
