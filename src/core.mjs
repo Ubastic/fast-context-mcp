@@ -25,7 +25,6 @@ import {
   connectFrameDecode,
 } from "./protobuf.mjs";
 import { ToolExecutor } from "./executor.mjs";
-import { extractKey } from "./extract-key.mjs";
 
 // ─── Error Classification ──────────────────────────────────
 
@@ -360,34 +359,17 @@ function getToolDefinitions(maxCommands = 8) {
 // ─── Credentials ───────────────────────────────────────────
 
 /**
- * Auto-discover Windsurf API key from local installation.
- * @returns {Promise<string|null>}
+ * Get API key from env var.
+ * @returns {string}
  */
-async function autoDiscoverApiKey() {
-  try {
-    const result = await extractKey();
-    if (result.api_key && result.api_key.startsWith("sk-")) {
-      return result.api_key;
-    }
-  } catch {
-    // Extraction failed
-  }
-  return null;
-}
-
-/**
- * Get API key from env var or auto-discovery.
- * @returns {Promise<string>}
- */
-async function getApiKey() {
+function getApiKey() {
   const key = process.env.WINDSURF_API_KEY;
-  if (key) return key;
-  const discovered = await autoDiscoverApiKey();
-  if (discovered) return discovered;
-  throw new Error(
-    "Windsurf API Key not found. Set WINDSURF_API_KEY env var or ensure Windsurf is logged in. " +
-    "Run extract-key.mjs to see extraction methods."
-  );
+  if (!key) {
+    throw new Error(
+      "Windsurf API Key not found. Set WINDSURF_API_KEY env var."
+    );
+  }
+  return key;
 }
 
 // ─── JWT Cache ──────────────────────────────────────────────
@@ -986,7 +968,7 @@ export async function search({
 
   // Get credentials
   if (!apiKey) {
-    apiKey = await getApiKey();
+    apiKey = getApiKey();
   }
   if (!jwt) {
     log("Fetching JWT...");
@@ -1165,7 +1147,7 @@ export async function searchWithContent({
       if (meta.errorCode === "PAYLOAD_TOO_LARGE" || meta.errorCode === "TIMEOUT") {
         errMsg += `\n[hint] Payload/timeout error. Try: reduce tree_depth, reduce max_turns, add exclude_paths, or narrow project_path to a subdirectory.`;
       } else if (meta.errorCode === "AUTH_ERROR") {
-        errMsg += `\n[hint] Authentication error. The API key may be expired or revoked. Try re-extracting with extract_windsurf_key, or set a fresh WINDSURF_API_KEY.`;
+        errMsg += `\n[hint] Authentication error. The API key may be expired or revoked. Set a fresh WINDSURF_API_KEY env var.`;
       } else if (meta.errorCode === "RATE_LIMITED") {
         errMsg += `\n[hint] Rate limited. Wait a moment and retry.`;
       } else {
@@ -1218,10 +1200,3 @@ export async function searchWithContent({
   return parts.join("\n");
 }
 
-/**
- * Extract Windsurf API Key info (for MCP tool use).
- * @returns {Promise<Object>}
- */
-export async function extractKeyInfo() {
-  return extractKey();
-}

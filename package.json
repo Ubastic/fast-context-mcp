@@ -1,5 +1,5 @@
 {
-  "name": "@sammysnake/fast-context-mcp",
+  "name": "@ubastic/fast-context-mcp",
   "version": "1.2.0",
   "description": "AI-driven semantic code search via reverse-engineered Windsurf protocol (Node.js)",
   "type": "module",
@@ -20,11 +20,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SammySnake-d/fast-context-mcp.git"
+    "url": "git+https://github.com/Ubastic/fast-context-mcp.git"
   },
-  "homepage": "https://github.com/SammySnake-d/fast-context-mcp#readme",
+  "homepage": "https://github.com/Ubastic/fast-context-mcp#readme",
   "bugs": {
-    "url": "https://github.com/SammySnake-d/fast-context-mcp/issues"
+    "url": "https://github.com/Ubastic/fast-context-mcp/issues"
   },
   "keywords": [
     "mcp",
@@ -39,7 +39,6 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@vscode/ripgrep": "^1.15.9",
-    "sql.js": "^1.14.0",
     "tree-node-cli": "^1.6.0",
     "zod": "^3.23.0"
   },

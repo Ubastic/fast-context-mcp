@@ -18,7 +18,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { searchWithContent, extractKeyInfo } from "./core.mjs";
+import { searchWithContent } from "./core.mjs";
 
 /**
  * Parse an integer env var with optional clamping.
@@ -61,21 +61,18 @@ const server = new McpServer({
     "The response includes [config] and [diagnostic] lines — read them to decide if you should retry with different parameters.",
 });
 
-// ─── Tool: fast_context_search ─────────────────────────────
+// ─── Tool: codebase_search ─────────────────────────────
 
 server.tool(
-  "fast_context_search",
-  "AI-driven semantic code search using Windsurf's Devstral model. " +
-  "Searches a codebase with natural language and returns relevant file paths with line ranges, " +
-  "plus suggested grep keywords for follow-up searches.\n" +
-  "Parameter tuning guide:\n" +
-  "- tree_depth: Controls how much directory structure the remote AI sees before searching. " +
-  "If you get a payload/size error, REDUCE this value. " +
-  "If search results are too shallow (missing files in deep subdirectories), INCREASE this value.\n" +
-  "- max_turns: Controls how many search-execute-feedback rounds the remote AI gets. " +
-  "If results are incomplete or the AI didn't find enough files, INCREASE this value. " +
-  "If you want a quick rough answer, use 1.\n" +
-  "Response includes a [config] line showing actual parameters used — use this to decide adjustments on retry.",
+  "codebase_search",
+  "Find snippets of code from the codebase most relevant to the search query. " +
+  "This performs best when the search query is more precise and relating to the function or purpose of code. " +
+  "Results will be poor if asking a very broad question, such as asking about the general 'framework' or 'implementation' " +
+  "of a large component or system. Will only show the full code contents of the top items, and they may also be truncated. " +
+  "For other items it will only show the docstring and signature. " +
+  "Use view_code_item with the same path and node name to view the full code contents for any item. " +
+  "Note that if you try to search over more than 500 files, the quality of the search results will be substantially worse. " +
+  "Try to only search over a large number of files if it is really necessary.",
   {
     query: z.string().describe(
       'Natural language search query (e.g. "where is auth handled", "database connection pool")'
@@ -165,35 +162,6 @@ server.tool(
         }]
       };
     }
-  }
-);
-
-// ─── Tool: extract_windsurf_key ────────────────────────────
-
-server.tool(
-  "extract_windsurf_key",
-  "Extract Windsurf API Key from local installation. " +
-  "Auto-detects OS (macOS/Windows/Linux) and reads the API key from " +
-  "Windsurf's local database. Set the result as WINDSURF_API_KEY env var.",
-  {},
-  async () => {
-    const result = await extractKeyInfo();
-
-    if (result.error) {
-      const text = `Error: ${result.error}\n${result.hint || ""}\nDB path: ${result.db_path || "N/A"}`;
-      return { content: [{ type: "text", text }] };
-    }
-
-    const key = result.api_key;
-    const text =
-      `Windsurf API Key extracted successfully\n\n` +
-      `  Key: ${key.slice(0, 30)}...${key.slice(-10)}\n` +
-      `  Length: ${key.length}\n` +
-      `  Source: ${result.db_path}\n\n` +
-      `Usage:\n` +
-      `  export WINDSURF_API_KEY="${key}"`;
-
-    return { content: [{ type: "text", text }] };
   }
 );
 

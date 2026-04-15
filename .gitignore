@@ -7,7 +7,7 @@ node_modules/
 
 # Local docs (not for distribution)
 localdocs/
-
+.history
 # Legacy Python artifacts
 __pycache__/
 *.pyc

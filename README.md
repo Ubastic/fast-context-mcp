@@ -47,16 +47,16 @@ No need to install ripgrep — it's bundled via `@vscode/ripgrep`.
 
 ```bash
 # Latest stable release
-npm install @sammysnake/fast-context-mcp
+npm install @ubastic/fast-context-mcp
 
 # Or beta/next release
-npm install @sammysnake/fast-context-mcp@next
+npm install @ubastic/fast-context-mcp@next
 ```
 
 ### Option 2: From Source
 
 ```bash
-git clone https://github.com/SammySnake-d/fast-context-mcp.git
+git clone https://github.com/Ubastic/fast-context-mcp.git
 cd fast-context-mcp
 npm install
 ```
@@ -65,15 +65,7 @@ npm install
 
 ### 1. Get Your Windsurf API Key
 
-The server auto-extracts the API key from your local Windsurf installation. You can also use the `extract_windsurf_key` MCP tool after setup, or set `WINDSURF_API_KEY` manually.
-
-Key is stored in Windsurf's local SQLite database:
-
-| Platform | Path |
-|----------|------|
-| macOS | `~/Library/Application Support/Windsurf/User/globalStorage/state.vscdb` |
-| Windows | `%APPDATA%/Windsurf/User/globalStorage/state.vscdb` |
-| Linux | `~/.config/Windsurf/User/globalStorage/state.vscdb` |
+The server requires the API key to be set via `WINDSURF_API_KEY` environment variable.
 
 ### 2. Configure MCP Client
 
@@ -85,7 +77,7 @@ Add to `~/.claude.json` under `mcpServers`:
 {
   "fast-context": {
     "command": "npx",
-    "args": ["-y", "--prefer-online", "@sammysnake/fast-context-mcp"],
+    "args": ["-y", "--prefer-online", "@ubastic/fast-context-mcp"],
     "env": {
       "WINDSURF_API_KEY": "sk-ws-01-xxxxx"
     }
@@ -99,7 +91,7 @@ For beta/next release:
 {
   "fast-context": {
     "command": "npx",
-    "args": ["-y", "--prefer-online", "@sammysnake/fast-context-mcp@next"],
+    "args": ["-y", "--prefer-online", "@ubastic/fast-context-mcp@next"],
     "env": {
       "WINDSURF_API_KEY": "sk-ws-01-xxxxx"
     }
@@ -115,7 +107,7 @@ Add to `claude_desktop_config.json` under `mcpServers`:
 {
   "fast-context": {
     "command": "npx",
-    "args": ["-y", "--prefer-online", "@sammysnake/fast-context-mcp"],
+    "args": ["-y", "--prefer-online", "@ubastic/fast-context-mcp"],
     "env": {
       "WINDSURF_API_KEY": "sk-ws-01-xxxxx"
     }
@@ -129,7 +121,7 @@ For beta/next release:
 {
   "fast-context": {
     "command": "npx",
-    "args": ["-y", "--prefer-online", "@sammysnake/fast-context-mcp@next"],
+    "args": ["-y", "--prefer-online", "@ubastic/fast-context-mcp@next"],
     "env": {
       "WINDSURF_API_KEY": "sk-ws-01-xxxxx"
     }
@@ -137,13 +129,12 @@ For beta/next release:
 }
 ```
 
-> If `WINDSURF_API_KEY` is omitted, the server auto-discovers it from your local Windsurf installation.
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WINDSURF_API_KEY` | *(auto-discover)* | Windsurf API key |
+| `WINDSURF_API_KEY` | *(required)* | Windsurf API key |
 | `FC_MAX_TURNS` | `3` | Search rounds per query (more = deeper but slower) |
 | `FC_MAX_COMMANDS` | `8` | Max parallel commands per round |
 | `FC_TIMEOUT_MS` | `30000` | Connect-Timeout-Ms for streaming requests |
@@ -163,9 +154,9 @@ Default: `MODEL_SWE_1_6_FAST` — fastest speed, richest grep keywords, finest l
 
 ## MCP Tools
 
-### `fast_context_search`
+### `codebase_search`
 
-AI-driven semantic code search with tunable parameters.
+Find snippets of code from the codebase most relevant to the search query.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
@@ -198,7 +189,7 @@ Error output includes status-specific hints:
 Error: Request failed: HTTP 403
 
 [hint] 403 Forbidden: Authentication failed. The API key may be expired or revoked.
-Try re-extracting with extract_windsurf_key, or set a fresh WINDSURF_API_KEY env var.
+Set a fresh WINDSURF_API_KEY env var.
 ```
 
 ```
@@ -208,9 +199,6 @@ Error: Request failed: HTTP 413
 [hint] If the error is payload-related, try a lower tree_depth value.
 ```
 
-### `extract_windsurf_key`
-
-Extract Windsurf API Key from local installation. No parameters.
 
 ## Project Structure
 
@@ -221,7 +209,6 @@ fast-context-mcp/
 │   ├── server.mjs        # MCP server entry point
 │   ├── core.mjs          # Auth, message building, streaming, search loop
 │   ├── executor.mjs      # Tool executor: rg, readfile, tree, ls, glob
-│   ├── extract-key.mjs   # Windsurf API Key extraction (SQLite)
 │   └── protobuf.mjs      # Protobuf encoder/decoder + Connect-RPC frames
 ├── README.md
 └── LICENSE
@@ -254,7 +241,6 @@ fast-context-mcp/
 | `@modelcontextprotocol/sdk` | MCP server framework |
 | `@vscode/ripgrep` | Bundled ripgrep binary (cross-platform) |
 | `tree-node-cli` | Cross-platform directory tree (replaces system `tree`) |
-| `better-sqlite3` | Read Windsurf's local SQLite DB |
 | `zod` | Schema validation (MCP SDK requirement) |
 
 ## License
